@@ -10,14 +10,6 @@ Panellerle alakalı daha fazla bilgi için Grafana'nın Panels hakkındaki dök�
 - NodeJS 12.x
 - yarn
 
-Set up your environment
-Before you can get started building plugins, you need to set up your environment for plugin development.
-
-To discover plugins, Grafana scans a plugin directory, the location of which depends on your operating system.
-
-Create a directory called grafana-plugins in your preferred workspace.
-
-Find the plugins property in the Grafana configuration file and set the plugins property to the path of your grafana-plugins directory. Refer to the Grafana configuration documentation for more information.
 
 ## 2. Çalışma ortamınızı ayarlayın
 Plugin geliştirmeye başlamadan önce çalışma ortamınızı ayarlamanız gerekir.
@@ -26,7 +18,7 @@ Pluginleri keşfetmek için Grafana plugins klasörü arar, bu klasörün konumu
 
 1. Çalışma ortamınızda `grafana-plugins` adında bir klasör açın.
 
-2. Grafana konfigürasyon dosyasında `plugins` satırını bulun ve dosya yolunu kendi `grafana-plugins` klasörünüze ayarlayın. Grafana konfigürasyon dosyası alakalaı daha fazla bilgi için dökümantasyona ulaşın.
+2. Grafana konfigürasyon dosyasında `plugins` satırını bulun ve dosya yolunu kendi `grafana-plugins` klasörünüze ayarlayın. Grafana konfigürasyon dosyası alakalı daha fazla bilgi için dökümantasyona ulaşın.
 
 ```
 [paths]
@@ -93,7 +85,7 @@ Oluşturduğunuz her plugin en az iki dosyaya ihtiyaç duyacak: `plugin.json` an
 
 ### plugin.json
 
-Grafana çalıştırıldığında plugin klasöründe `plugin.json` dosyası içeren bütün alt klasörleri tarar. `plugin.json` dosyası plugininizin hakkında bilgi içerir ve Grafana'ya plugininizin yapabildiklerini ve gerekli bağımlılıklarını iletir.
+Grafana çalıştırıldığında plugin klasöründe `plugin.json` dosyası içeren bütün alt klasörleri tarar. `plugin.json` dosyası plugininiz hakkında bilgi içerir ve Grafana'ya plugininizin yapabildiklerini ve gerekli bağımlılıklarını iletir.
 
 Bazı plugin tipleri farklı konfigürasyon seçeneklerine sahip olsa da zorunlu olanlara bakalım:
 
@@ -107,9 +99,9 @@ Bazı plugin tipleri farklı konfigürasyon seçeneklerine sahip olsa da zorunlu
 
 ### module.ts
 
-Grafana plugininizi keşfettikten sonra `module.ts` dosyasını yükler, bu dosya plugininizin giriş noktasıdır. `module.ts` plugininizin yazılımını açığa çıkarır, bu yazılım oluşturduğunuz plugin tipine göre değişir.
+Grafana plugininizi keşfettikten sonra `module.ts` dosyasını yükler, bu dosya plugininizin giriş noktasıdır. `module.ts` plugininizin yazılımını içerir, bu yazılım oluşturduğunuz plugin tipine göre değişir.
 
-Spesifik olarak `module.ts` [GrafanaPlugin'i](https://github.com/grafana/grafana/blob/08bf2a54523526a7f59f7c6a8dafaace79ab87db/packages/grafana-data/src/types/plugin.ts#L124) extend eden bir objeyi açığa çıkarmalıdır. Bu aşağıdakilerden herhangi birisi olabilir:
+Spesifik olarak `module.ts` [GrafanaPlugin'i](https://github.com/grafana/grafana/blob/08bf2a54523526a7f59f7c6a8dafaace79ab87db/packages/grafana-data/src/types/plugin.ts#L124) extend eden bir objeyi içermelidir. Bu aşağıdakilerden herhangi birisi olabilir:
 
 * [PanelPlugin](https://github.com/grafana/grafana/blob/08bf2a54523526a7f59f7c6a8dafaace79ab87db/packages/grafana-data/src/types/panel.ts#L73)
 * [DataSourcePlugin](https://github.com/grafana/grafana/blob/08bf2a54523526a7f59f7c6a8dafaace79ab87db/packages/grafana-data/src/types/datasource.ts#L33)
@@ -259,3 +251,76 @@ switch (options.color) {
 
 Artık panel editörde rengi değiştirdiğinizde çemberin rengininde değiştiğini göreceksiniz. 
 
+## 7. Data frame'leri kullanarak dinamik paneller yaratın
+
+Çoğu panel Grafana data source'dan gelen dinamik veriyi görselleştirir. Bu adımda, her bir serideki sayıyı kullanarak için yarıçapı bu sayı olan yeni çemberler yaratacaksınız.
+
+> Panelinizde veri tabanından gelen verileri kullanmak için data source kurmanız gerekmektedir. 
+> Eğer mevcut bir tane yoksa, geçici olarak [TestData DB'i](https://grafana.com/docs/grafana/latest/features/datasources/testdata) kullanabilirsiniz.
+
+Data source'dan gelen veriler panel bileşen sınıfının (component) içindeki `data` değişkeninde bulunur.
+
+```typescript
+const { data } = props;
+```
+
+`data.series` data source'dan gelen serileri içerir. Her bir seri *data frame* denilen bir veri yapısı şeklinde gösterilir. *Data frame* gelen verileri sütunlara koyup yeni bir tablo oluşturur. Her bir sütundaki veri aynı veri yapısındadır: string, int veya time. 
+
+Aşağıda `Time` ve `Value` sütununa sahip örnek bir *data frame* görebilirsiniz.
+
+Time | Value
+------------ | -------------
+1589189388597 | 32.4
+1589189406480 | 27.2
+1589189513721 | 15.0
+
+Hadi bu *data frame*'den nasıl veri çekip görselleştireceğinize bakalım:
+
+1. Her sütundan `number` veri yapısındaki son veriyi alın ve `SimplePanel.tsx` dosyasına `return` kısmından önce aşağıdakini kullanarak ekleyin:
+
+```typescript
+const radii = data.series
+ .map(series => series.fields.find(field => field.type === 'number'))
+ .map(field => field?.values.get(field.values.length - 1));
+```
+
+`radii` data source'dan gelen serilerden en sondaki verileri içerecek. Bu verileri her çemberin yarıçapını ayarlamak için kullanabilirsiniz.
+
+2. `svg` elementini aşağıdakine göre değiştirin:
+
+```typescript
+<svg
+  className={styles.svg}
+  width={width}
+  height={height}
+  xmlns="http://www.w3.org/2000/svg"
+  xmlnsXlink="http://www.w3.org/1999/xlink"
+  viewBox={`0 -${height / 2} ${width} ${height}`}
+>
+  <g fill={color}>
+    {radii.map((radius, index) => {
+      const step = width / radii.length;
+      return <circle r={radius} transform={`translate(${index * step + step / 2}, 0)`} />;
+    })}
+  </g>
+</svg>
+```
+
+Her `radii` değeri için nasıl `<circle>` elementi oluşturduğumuza dikkat edin:
+
+```typescript
+{radii.map((radius, index) => {
+  const step = width / radii.length;
+  return <circle r={radius} transform={`translate(${index * step + step / 2}, 0)`} />;
+})}
+```
+
+Oluşan çemberi yatay olarak dağıtmak için `transform`'u kullanıyoruz.
+
+3. Plugininizi yeniden build edin ve dashboard'u yenileyin.
+
+Eğer *data frame*'ler hakkında daha çok bilgi sahibi olmak istiyorsanız [Data frames](https://grafana.com/docs/grafana/latest/developers/plugins/data-frames/) sayfasına gidin.
+
+## Tebrikler!
+
+Grafana'da panel plugin oluşturma rehberimizin sonuna geldiniz.
