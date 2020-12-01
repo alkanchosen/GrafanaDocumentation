@@ -1,6 +1,6 @@
 # Panel Plugin Geliştirme
 
-### Giriş
+## 1. Giriş
 Paneller Grafana'nın temel bileşenleridir. Çeşitli verileri farklı yollarla görselleştirmenize izin verirler. Grafana'da hali hazırda bulunan değişik panel tipleri varken başka görselleştirmeler yapmak için kendi panelinizi yaratabilirsiniz.
 
 Panellerle alakalı daha fazla bilgi için Grafana'nın Panels hakkındaki dökümantasyonunu okuyabilirsiniz.
@@ -19,7 +19,7 @@ Create a directory called grafana-plugins in your preferred workspace.
 
 Find the plugins property in the Grafana configuration file and set the plugins property to the path of your grafana-plugins directory. Refer to the Grafana configuration documentation for more information.
 
-### Çalışma ortamınızı ayarlayın
+## 2. Çalışma ortamınızı ayarlayın
 Plugin geliştirmeye başlamadan önce çalışma ortamınızı ayarlamanız gerekir.
 
 Pluginleri keşfetmek için Grafana plugins klasörü arar, bu klasörün konumu işletim sisteminize göre değişiklik gösterir.
@@ -48,3 +48,61 @@ Grafana pluginleri sadece açılışta yüklediği için herhangi bir plugin ekl
 ```
 docker restart grafana
 ```
+
+## 3. Yeni bir plugin oluşturun
+
+Create a new plugin
+Tooling for modern web development can be tricky to wrap your head around. While you certainly can write your own webpack configuration, for this guide, you’ll be using grafana-toolkit.
+
+grafana-toolkit is a CLI application that simplifies Grafana plugin development, so that you can focus on code. The toolkit takes care of building and testing for you.
+
+In the plugin directory, create a plugin from template using the plugin:create command:
+
+npx @grafana/toolkit plugin:create my-plugin
+Change directory.
+
+cd my-plugin
+Download necessary dependencies:
+
+yarn install
+Build the plugin:
+
+yarn dev
+Restart the Grafana server for Grafana to discover your plugin.
+
+Open Grafana and go to Configuration -> Plugins. Make sure that your plugin is there.
+
+Modern web geliştirme için araç geliştirmek zor olabilir. Kendi webpack konfigürasyonunuzu yazabilme imkanınız varken, bu rehber için, grafana-toolkit'i kullanacağız.
+
+[grafana-toolkit](https://github.com/grafana/grafana/tree/master/packages/grafana-toolkit) Grafana için plugin geliştirmeyi kolaylaştıran bir CLI (Komut Satırı Arayüzü) uygulamasıdır. Böylece kod yazmaya daha fazla odaklanabilirsiniz. Geri kalan yapı ve test işlerini grafana-toolkit sizin için halleder.
+
+1. Plugin klasöründe `plugin:create` komunutu çalıştırarak yeni bir şablon oluşturun.
+
+```
+npx @grafana/toolkit plugin:create my-plugin
+```
+
+2. Klasör değiştirin.
+```
+cd my-plugin
+```
+
+3. Gerekli bağımlılıkları yükleyin.
+```
+yarn install
+```
+
+4. Plugini oluşturun.
+```
+yarn dev
+```
+
+5. Grafana'nın yeni plugininizi keşfetmesi için Grafana sunucusunu yeniden başlatın.
+
+6. Grafana'yı açın ve **Configuration -> Plugins** kısmına gidin. Plugininizin orada olduğundan emin olun.
+
+Grafana varsayılan olarak yeni bir plugin keşfettiğinde log dosyasına kayıt alır.
+```
+INFO[01-01|12:00:00] Registering plugin       logger=plugins name=my-plugin
+```
+
