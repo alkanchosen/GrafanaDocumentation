@@ -1,7 +1,7 @@
 ### Kubernetes Scheduler
 Kubernetes'te scheduling, Kubelet'in Pod'ların çalıştırabilmesi için Node'ların Pod'lar ile eşleştiğinden emin olmayı ifade eder.
 
-##### Planlamaya genel bakış
+##### Scheduling'e genel bakış
 Bir scheduler, atanmış Node'u olmayan yeni Pod'ları izler. Scheduler keşfettiği her Pod için o Pod'un üzerinde çalışacağı en iyi Node'u bulmaktan sorumlu olur. Planlayıcı, aşağıda açıklanan programlama prensiplerini dikkate alarak bu yerleştirme kararına ulaşır.
 
 Pod'ların neden belirli bir Node'a yerleştirildiğini anlamak istiyorsanız veya kendiniz bir özel scheduler uygulamayı planlıyorsanız, bu sayfa scheduler hakkında bilgi edinmenize yardımcı olacaktır.
