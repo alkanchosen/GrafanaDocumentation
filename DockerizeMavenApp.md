@@ -25,7 +25,7 @@ COPY ${JAR_FILE} app.jar
 ENTRYPOINT ["java","-jar","/app.jar"]
 ```
 
-![mvn2.png](src/mvn2.png)
+![mvn2.png](src/mvn2.PNG)
 
 3. `docker build -t project/project-docker .` komutu çalıştırılır ve Docker imajı oluşturulur.
   
