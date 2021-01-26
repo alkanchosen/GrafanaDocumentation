@@ -1,3 +1,3 @@
-# GrafanaDocumentation
+# TurkishDocumentation
 
-Turkish Grafana Documentation
+This repository contains some docs about Docker, Grafana and Kubernetes in Turkish.
